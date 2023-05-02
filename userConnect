@@ -1,0 +1,67 @@
+#!/bin/bash
+declare -a TabW
+declare -a TabPasswd
+declare -a RealUser
+# le programme va venir regarder les identifiants des personnes connectées 
+# et les comparer a celle dans le fichier etc/passwd, si les deux identifiants correspondent
+# alors on met dans un tableau le nom de l'utilisateurs
+
+# 1 - Regarder tous les utilisateurs connectées 
+# 2 - Comparer leurs nom avec celui du fichiers etc/passwd
+# 3 - mettre dans un vecteur le nom des utilisateurs connectées 
+
+function User {
+  i=0
+   for user in $( w | awk '{print $1}')
+      do
+      TabW[$i]=$user 
+      (( i++ ))
+      done
+}
+
+function pass {
+
+j=0
+  for passUser in $( cat /etc/passwd | cut -d ':' -f1)
+      do
+        TabPasswd[$j]=$passUser
+        (( j++ ))
+      done  
+
+}
+
+function recense {
+i=0
+j=0
+k=0
+  while (( j < ${#TabW[*]} ))
+     do
+     if [[ ${TabW[$j]} == ${TabPasswd[$i]} ]]
+        then
+        RealUser[$k]=${TabPasswd[$i]}
+        (( k++ ))
+        fi
+     if (( i == ${#TabPasswd[*]} ))
+      then
+      ((i=0))
+      ((j++))
+      fi
+      (( i++ ))
+    done    
+
+}
+
+function affiche {
+m=0
+  while (( m < ${#RealUser[*]}))
+    do
+    echo "${RealUser[$m]} est connecté(e)"
+    (( m++ ))
+    done
+
+}
+
+User
+pass
+recense
+affiche
